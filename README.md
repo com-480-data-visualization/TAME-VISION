@@ -10,19 +10,6 @@
 
 ## Milestone 1 (20th March, 5pm)
 
-**10% of the final grade**
-
-This is a preliminary milestone to let you set up goals for your final project and assess the feasibility of your ideas.
-Please, fill the following sections about your project.
-
-*(max. 2000 characters per section)*
-
-### Dataset
-
-> Find a dataset (or multiple) that you will explore. Assess the quality of the data it contains and how much preprocessing / data-cleaning it will require before tackling visualization. We recommend using a standard dataset as this course is not about scraping nor data processing.
->
-> Hint: some good pointers for finding quality publicly available datasets ([Google dataset search](https://datasetsearch.research.google.com/), [Kaggle](https://www.kaggle.com/datasets), [OpenSwissData](https://opendata.swiss/en/), [SNAP](https://snap.stanford.edu/data/) and [FiveThirtyEight](https://data.fivethirtyeight.com/)).
-
 ### Our Dataset: Formula 1 Race Data 🏎️
 
 The dataset we are using is from [Kaggle](https://www.kaggle.com/datasets/jtrotman/formula-1-race-data), covering Formula 1 race data from **1950 to 2026**. It is a collection of 14 relational CSV files including race results, driver standings, lap times, pit stops, qualifying times and circuit information.
@@ -37,12 +24,6 @@ Key numbers:
 The data is clean and well-structured. The main preprocessing step is replacing `\N` null values and converting numeric columns stored as strings.
 
 ### Problematic
-
-> Frame the general topic of your visualization and the main axis that you want to develop.
-> - What am I trying to show with my visualization?
-> - Think of an overview for the project, your motivation, and the target audience.
-
-### Problematic 🔍
 
 - **Our Motivation:**
 Formula 1 is the world's most popular motorsport, yet it can feel intimidating to newcomers — complex rules, decades of history, and a lot of numbers. Our project aims to make F1 approachable and fun to explore for everyone, whether you just watched your first race or have followed the sport for years.
