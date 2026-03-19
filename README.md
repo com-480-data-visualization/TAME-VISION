@@ -50,11 +50,13 @@ The story of Formula 1 through its data — the circuits, the champions, the tea
 
 ### Related work
 
+The analysis of Formula 1 data is already well explored. Existing projects typically focus on performance metrics such as lap times, standings, or driver comparisons. Some also include advanced analyses of race strategies or telemetry data. However, many of these works remain either highly technical or narrowly focused, making them less accessible to a broader audience. Our approach aims to provide a more intuitive and engaging experience, by structuring the exploration around circuits and emphasizing key metrics such as overtakes, speed, or incidents. We differentiate our project by focusing on accessibility and storytelling, notably through the integration of aggregated insights and “fun facts”, while still allowing users to explore more detailed data. The goal is to offer a clear global overview of Formula 1, combined with the possibility to access more precise and technical insights, bridging the gap between simplicity and analytical depth.
 
-> - What others have already done with the data?
-> - Why is your approach original?
-> - What source of inspiration do you take? Visualizations that you found on other websites or magazines (might be unrelated to your data).
-> - In case you are using a dataset that you have already explored in another context (ML or ADA course, semester project...), you are required to share the report of that work to outline the differences with the submission for this class.
+As a source of inspiration, we aim to combine two complementary approaches. On one hand, we draw from analytical platforms such as [F1 Pace](https://f1pace.com/), which provide detailed and data-driven insights tailored to a more technical audience. On the other hand, we take inspiration from more accessible and content-oriented websites such as [F1 Circuits](https://f1-circuits.com/), which present comprehensive information about circuits in an intuitive and engaging way.
+
+Our objective is to bridge these two perspectives by creating a platform that is both analytically rich and accessible, appealing to users with a strong interest in data as well as to Formula 1 enthusiasts looking for clear and engaging insights.
+
+
 
 ## Milestone 2 (17th April, 5pm)
 
