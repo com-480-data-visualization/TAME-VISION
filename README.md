@@ -44,7 +44,7 @@ The story of Formula 1 through its data — the circuits, the champions, the tea
 
 ### Exploratory Data Analysis
 
-We performed an initial exploration (see `milestone1.ipynb`) of the Formula 1 dataset to identify key historical trends and technical distributions, using data cleaning techniques to handle missing values and outliers while uncovering some interesting statistics on specific seasons to show how the dataset allows us to bridge the gap between technical race metrics and engaging historical storytelling.
+We performed an initial exploration (see `milestone1.ipynb`) of the Formula 1 dataset to identify key historical trends and technical distributions, using data cleaning techniques to handle missing values and outliers. This allowed us to uncover interesting statistics on specific seasons and show how the dataset bridges the gap between technical race metrics and engaging historical storytelling.
 
 ### Related work
 
