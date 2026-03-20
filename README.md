@@ -21,8 +21,6 @@ Key numbers:
 - 617,660 individual lap times
 - 22,164 pit stop records
 
-The data is clean and well-structured. The main preprocessing step is replacing `\N` null values and converting numeric columns stored as strings.
-
 ### Problematic
 
 - **Our Motivation:**
