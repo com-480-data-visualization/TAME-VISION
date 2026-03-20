@@ -2,9 +2,10 @@
 
 | Student's name | SCIPER |
 | -------------- | ------ |
-| | |
-| | |
-| | |
+| DECAUX Théodore | 329169 |
+| VELAY Mahé | 345882 |
+| ROBERT Adélaïde | 346471 |
+| BOURGON Elias | 346661 |
 
 [Milestone 1](#milestone-1) • [Milestone 2](#milestone-2) • [Milestone 3](#milestone-3)
 
