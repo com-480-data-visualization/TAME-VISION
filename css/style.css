@@ -1,0 +1,385 @@
+:root {
+  --f1-red: #E10600;
+  --f1-black: #15151E;
+  --f1-grey: #38383F;
+  --f1-light: #F7F4F1;
+  --f1-white: #FFFFFF;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: "Titillium Web", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: var(--f1-light);
+  color: var(--f1-black);
+  line-height: 1.5;
+}
+
+/* Navbar */
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: var(--f1-black);
+  color: var(--f1-white);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.9rem 2rem;
+  border-bottom: 3px solid var(--f1-red);
+}
+
+.nav-brand {
+  font-weight: 900;
+  font-size: 1.3rem;
+  letter-spacing: 2px;
+}
+.nav-brand span { color: var(--f1-red); }
+
+.nav-links {
+  list-style: none;
+  display: flex;
+  gap: 1.8rem;
+}
+.nav-links a {
+  color: var(--f1-white);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: color 0.2s;
+}
+.nav-links a:hover { color: var(--f1-red); }
+.nav-links a.active {
+  color: var(--f1-red);
+  border-bottom: 2px solid var(--f1-red);
+  padding-bottom: 2px;
+}
+
+/* Tab panels */
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* Cinematic 3D hero */
+.hero {
+  position: relative;
+  height: 85vh;
+  min-height: 560px;
+  color: var(--f1-white);
+  text-align: center;
+  border-bottom: 4px solid var(--f1-red);
+  overflow: hidden;
+}
+#hero3d {
+  position: absolute;
+  inset: 0;
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+}
+
+.hero-scene {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+}
+
+/* Sky with sunset gradient */
+.sky {
+  position: absolute;
+  inset: 0 0 50% 0;
+  background: linear-gradient(
+    to bottom,
+    #0a0a18 0%,
+    #1a1a3a 30%,
+    #4a2560 55%,
+    #c74a3e 80%,
+    #f0a050 100%
+  );
+}
+
+/* Setting sun glow */
+.sun {
+  position: absolute;
+  top: 28%;
+  left: 50%;
+  width: 200px;
+  height: 200px;
+  margin-left: -100px;
+  background: radial-gradient(circle, #fff7d0 0%, #ffb050 30%, #ff6020 55%, transparent 75%);
+  border-radius: 50%;
+  filter: blur(6px);
+  opacity: 0.9;
+  animation: sunPulse 4s ease-in-out infinite;
+}
+@keyframes sunPulse {
+  0%, 100% { transform: scale(1); opacity: 0.85; }
+  50%      { transform: scale(1.08); opacity: 1; }
+}
+
+/* Distant mountain silhouette */
+.mountains {
+  position: absolute;
+  left: 0; right: 0;
+  top: 38%;
+  height: 80px;
+  background:
+    linear-gradient(135deg, transparent 49%, #1a0a20 50%) 0 0 / 180px 80px,
+    linear-gradient(-135deg, transparent 49%, #1a0a20 50%) 0 0 / 180px 80px;
+  mask: linear-gradient(to bottom, #000 60%, transparent 100%);
+  opacity: 0.8;
+}
+
+/* Grandstands */
+.grandstand {
+  position: absolute;
+  bottom: 42%;
+  width: 35%;
+  height: 60px;
+  background:
+    repeating-linear-gradient(to right,
+      #222 0 6px, #2a2a2a 6px 12px) 0 0 / 100% 20px,
+    repeating-linear-gradient(to right,
+      #383838 0 4px, #2a2a2a 4px 8px) 0 20px / 100% 12px,
+    linear-gradient(to bottom, #1a1a1a, #0a0a0a);
+  background-repeat: no-repeat;
+  opacity: 0.85;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.6);
+}
+.grandstand.left  { left: 0;  transform: perspective(400px) rotateY(8deg); }
+.grandstand.right { right: 0; transform: perspective(400px) rotateY(-8deg); }
+
+/* Road in 3D perspective */
+.road {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 180%;
+  height: 50%;
+  margin-left: -90%;
+  transform: rotateX(62deg);
+  transform-origin: 50% 0;
+}
+.road-surface {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, #1a1a1a 0%, #262626 40%, #333 100%);
+}
+/* Moving lane stripes */
+.road-stripes {
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    #f8e050 0 40px,
+    transparent 40px 100px
+  );
+  background-size: 10px 100%;
+  background-position: 50% 0;
+  background-repeat: repeat-y;
+  animation: rushStripes 0.5s linear infinite;
+}
+@keyframes rushStripes {
+  from { background-position-y: 0; }
+  to   { background-position-y: 100px; }
+}
+/* Kerbs — red & white rumble strips on the edges */
+.kerb {
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 8%;
+  background: repeating-linear-gradient(
+    to bottom,
+    #E10600 0 24px,
+    #ffffff 24px 48px
+  );
+  animation: rushStripes 0.5s linear infinite;
+}
+.kerb-left  { left: 8%; }
+.kerb-right { right: 8%; }
+
+/* Motion blur veil — subtle vignette + horizontal streaks */
+.motion-blur {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 50% 45%, transparent 30%, rgba(0,0,0,0.4) 80%),
+    linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.03) 50%, transparent 100%);
+  background-size: 100% 100%, 300% 100%;
+  animation: blurSweep 2s linear infinite;
+}
+@keyframes blurSweep {
+  to { background-position: 0 0, 300% 0; }
+}
+
+/* Ferrari car — locked to center foreground, subtle bob to fake vibration */
+#ferrari-car {
+  position: absolute;
+  bottom: 18%;
+  left: 50%;
+  width: clamp(260px, 34vw, 440px);
+  height: auto;
+  transform: translateX(-50%);
+  filter: drop-shadow(0 14px 18px rgba(0,0,0,0.6))
+          drop-shadow(0 0 24px rgba(225,6,0,0.35));
+  animation: bob 0.12s ease-in-out infinite alternate;
+  z-index: 5;
+  overflow: visible;
+}
+@keyframes bob {
+  from { transform: translateX(-50%) translateY(0)      rotate(-0.25deg); }
+  to   { transform: translateX(-50%) translateY(-1.5px) rotate(0.25deg); }
+}
+.wheel {
+  transform-box: fill-box;
+  transform-origin: center center;
+  animation: spin 0.08s linear infinite;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Hero text overlayed on the scene */
+.hero-text {
+  position: relative;
+  z-index: 10;
+  padding-top: 7vh;
+  text-shadow: 0 2px 16px rgba(0,0,0,0.8);
+}
+.hero h1 {
+  font-size: clamp(2.2rem, 6vw, 4rem);
+  font-weight: 900;
+  letter-spacing: -1px;
+}
+.hero p {
+  margin-top: 0.8rem;
+  font-size: 1.1rem;
+  opacity: 0.92;
+}
+.hero-caption {
+  font-size: 0.85rem !important;
+  opacity: 0.7 !important;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.ferrari-dot {
+  display: inline-block;
+  width: 10px; height: 10px;
+  background: #E10600;
+  border-radius: 50%;
+  margin-right: 6px;
+  vertical-align: middle;
+  box-shadow: 0 0 8px #E10600;
+  animation: pulse 1.8s infinite;
+}
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 4px #E10600; }
+  50%      { box-shadow: 0 0 14px #E10600; }
+}
+
+/* Sections */
+.viz-section {
+  padding: 4rem 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.viz-section.alt {
+  background: var(--f1-white);
+  max-width: none;
+  padding-left: 0;
+  padding-right: 0;
+}
+.viz-section.alt > * {
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 2rem;
+  padding-right: 2rem;
+}
+
+.section-header h2 {
+  font-size: 1.8rem;
+  border-left: 5px solid var(--f1-red);
+  padding-left: 0.8rem;
+  margin-bottom: 0.4rem;
+}
+.section-header p {
+  color: var(--f1-grey);
+  margin-bottom: 1.5rem;
+}
+
+.viz-container {
+  width: 100%;
+  min-height: 450px;
+  background: var(--f1-white);
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  padding: 1rem;
+  overflow: hidden;
+}
+.viz-section.alt .viz-container {
+  background: var(--f1-light);
+}
+
+#circuit-map { height: 520px; padding: 0; }
+
+/* Controls */
+.controls {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+.controls input[type="text"],
+.controls select {
+  padding: 0.5rem 0.8rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 0.95rem;
+  background: white;
+}
+.controls input[type="range"] {
+  flex: 1;
+  min-width: 200px;
+  accent-color: var(--f1-red);
+}
+.controls label { font-weight: 600; }
+
+/* D3 chart defaults */
+.viz-container svg { width: 100%; height: 100%; display: block; }
+.bar { fill: var(--f1-red); transition: fill 0.2s; }
+.bar:hover { fill: var(--f1-black); }
+.axis text { font-size: 12px; fill: var(--f1-grey); }
+.axis path, .axis line { stroke: #ccc; }
+
+/* Tooltip */
+.tooltip {
+  position: absolute;
+  background: var(--f1-black);
+  color: white;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.85rem;
+  border-radius: 4px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+  z-index: 10000;
+}
+
+/* Footer */
+footer {
+  background: var(--f1-black);
+  color: rgba(255,255,255,0.7);
+  text-align: center;
+  padding: 2rem;
+  font-size: 0.9rem;
+  margin-top: 3rem;
+}
+
+@media (max-width: 700px) {
+  .nav-links { display: none; }
+  .viz-section { padding: 2.5rem 1rem; }
+}

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TAME-VISION — Formula 1 Data Stories</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="nav-brand">TAME<span>·</span>VISION</div>
+  <ul class="nav-links" id="tab-nav">
+    <li><a href="#circuits" class="tab-link active" data-tab="circuits">Circuits</a></li>
+    <li><a href="#people" class="tab-link" data-tab="people">Drivers &amp; Constructors</a></li>
+    <li><a href="#season" class="tab-link" data-tab="season">Season Replay</a></li>
+    <li><a href="#pitstops" class="tab-link" data-tab="pitstops">Strategy</a></li>
+  </ul>
+</nav>
+
+<header class="hero">
+  <canvas id="hero3d" aria-hidden="true"></canvas>
+  <div class="hero-text">
+    <h1>Formula 1, Visualized</h1>
+    <p>Seventy-six seasons of racing data — 1950 to 2026.</p>
+    <p class="hero-caption"><span class="ferrari-dot"></span> Scuderia Ferrari</p>
+  </div>
+</header>
+
+<section id="circuits" class="viz-section tab-panel active">
+  <div class="section-header">
+    <h2>1 · World Circuit Map</h2>
+    <p>Every circuit that has hosted a Formula 1 Grand Prix.</p>
+  </div>
+  <div id="circuit-map" class="viz-container"></div>
+</section>
+
+<div id="people" class="tab-panel">
+  <section id="drivers" class="viz-section alt">
+    <div class="section-header">
+      <h2>2 · Driver Hall of Fame</h2>
+      <p>Top 20 drivers by career race wins.</p>
+    </div>
+    <div class="controls">
+      <input type="text" id="driver-search" placeholder="Filter drivers…">
+    </div>
+    <div id="driver-chart" class="viz-container"></div>
+  </section>
+
+  <section id="constructors" class="viz-section">
+    <div class="section-header">
+      <h2>3 · Constructor Dominance</h2>
+      <p>Share of constructor championship points over time.</p>
+    </div>
+    <div id="constructor-chart" class="viz-container"></div>
+  </section>
+</div>
+
+<section id="season" class="viz-section alt tab-panel">
+  <div class="section-header">
+    <h2>4 · Season Race Replay</h2>
+    <p>Scrub through a season and watch the standings evolve.</p>
+  </div>
+  <div class="controls">
+    <label for="season-select">Season:</label>
+    <select id="season-select"></select>
+    <label for="race-slider" id="race-label">Race 1</label>
+    <input type="range" id="race-slider" min="1" max="1" step="1" value="1">
+  </div>
+  <div id="season-chart" class="viz-container"></div>
+</section>
+
+<section id="pitstops" class="viz-section tab-panel">
+  <div class="section-header">
+    <h2>5 · Pit Stop Strategy</h2>
+    <p>Tyre stints and pit stops for every driver in a selected race.</p>
+  </div>
+  <div class="controls">
+    <label for="pit-year-select">Year:</label>
+    <select id="pit-year-select"></select>
+    <label for="race-select">Race:</label>
+    <select id="race-select"></select>
+  </div>
+  <div id="pitstop-chart" class="viz-container"></div>
+</section>
+
+<footer>
+  <p>TAME-VISION · Data: Kaggle F1 (Ergast) · Built with D3 & Leaflet</p>
+</footer>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+<script src="js/hero3d.js"></script>
+<script src="js/viz1.js"></script>
+<script src="js/viz2.js"></script>
+<script src="js/viz3.js"></script>
+<script src="js/viz4.js"></script>
+<script src="js/viz5.js"></script>
+<script src="js/main.js"></script>
+
+</body>
+</html>
