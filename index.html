@@ -3,102 +3,488 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TAME-VISION — Formula 1 Data Stories</title>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-<link rel="stylesheet" href="css/style.css">
+<title>F1 Racing Dashboard</title>
+<style>
+:root {
+  --bg-dark:#0f0f13; --bg-card:#1a1a24; --bg-header:#0d0d15; --bg-section:#14141e;
+  --red:#e10600; --silver:#c0c0c0; --gold:#ffd700;
+  --text-primary:#fff; --text-secondary:#9898a8; --text-muted:#5a5a6a;
+  --border:#2a2a3a; --green:#00c853; --blue:#0090ff; --orange:#ff6b00;
+  --gap:16px; --radius:10px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg-dark);color:var(--text-primary);line-height:1.5;}
+.wrap{max-width:1440px;margin:0 auto;padding:var(--gap);}
+
+/* HEADER */
+.hdr{background:var(--bg-header);border:1px solid var(--border);border-top:3px solid var(--red);padding:16px 22px;border-radius:var(--radius);margin-bottom:var(--gap);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;}
+.hdr-left{display:flex;align-items:center;gap:14px;}
+.f1-logo{background:var(--red);color:#fff;font-weight:900;font-size:17px;padding:4px 11px;border-radius:4px;letter-spacing:2px;}
+.hdr h1{font-size:19px;font-weight:700;}
+.hdr .sub{font-size:11px;color:var(--text-secondary);margin-top:1px;}
+.filter-group{display:flex;align-items:center;gap:6px;}
+.filter-group label{font-size:12px;color:var(--text-secondary);}
+.filter-group select,.filter-group input{padding:6px 10px;border:1px solid var(--border);border-radius:5px;background:#22223a;color:var(--text-primary);font-size:13px;cursor:pointer;}
+.filter-group select:focus,.filter-group input:focus{outline:none;border-color:var(--red);}
+
+/* TABS */
+.tabs{display:flex;gap:4px;margin-bottom:var(--gap);border-bottom:1px solid var(--border);overflow-x:auto;}
+.tab-btn{padding:9px 18px;background:transparent;border:none;border-bottom:2px solid transparent;color:var(--text-secondary);cursor:pointer;font-size:13px;font-weight:600;white-space:nowrap;transition:all .2s;}
+.tab-btn:hover{color:var(--text-primary);}
+.tab-btn.active{color:var(--red);border-bottom-color:var(--red);}
+.tab-panel{display:none;}.tab-panel.active{display:block;}
+
+/* KPI */
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:var(--gap);margin-bottom:var(--gap);}
+.kpi-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;position:relative;overflow:hidden;}
+.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.kpi-card.red::before{background:var(--red);}
+.kpi-card.gold::before{background:var(--gold);}
+.kpi-card.silver::before{background:var(--silver);}
+.kpi-card.blue::before{background:var(--blue);}
+.kpi-card.green::before{background:var(--green);}
+.kpi-label{font-size:11px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px;}
+.kpi-value{font-size:25px;font-weight:800;margin-bottom:2px;}
+.kpi-sub{font-size:11px;color:var(--text-muted);}
+
+/* CHART GRIDS */
+.chart-grid-2{display:grid;grid-template-columns:repeat(auto-fit,minmax(400px,1fr));gap:var(--gap);margin-bottom:var(--gap);}
+.chart-grid-3{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:var(--gap);margin-bottom:var(--gap);}
+.chart-box{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;}
+.chart-box.wide{grid-column:1/-1;}
+.chart-box canvas{max-height:280px;}
+.chart-box.tall canvas{max-height:360px;}
+.chart-title{font-size:13px;font-weight:700;margin-bottom:3px;display:flex;align-items:center;gap:7px;}
+.chart-title .dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.chart-sub{font-size:11px;color:var(--text-secondary);margin-bottom:14px;}
+
+/* TABLE */
+.tbl-section{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;overflow-x:auto;margin-bottom:var(--gap);}
+.tbl-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px;}
+.tbl-title{font-size:13px;font-weight:700;}
+.data-table{width:100%;border-collapse:collapse;font-size:13px;}
+.data-table thead th{text-align:left;padding:8px 11px;border-bottom:1px solid var(--border);color:var(--text-secondary);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;cursor:pointer;user-select:none;}
+.data-table thead th:hover{color:var(--text-primary);}
+.data-table tbody td{padding:9px 11px;border-bottom:1px solid #1e1e2e;color:var(--text-primary);}
+.data-table tbody tr:hover{background:rgba(255,255,255,.04);}
+.data-table tbody tr:last-child td{border-bottom:none;}
+.clickable-row{cursor:pointer;}
+.clickable-row:hover td{color:#fff;}
+
+/* SEARCH */
+.search-input{padding:6px 10px;border:1px solid var(--border);border-radius:5px;background:#22223a;color:var(--text-primary);font-size:12px;width:160px;}
+.search-input::placeholder{color:var(--text-muted);}
+.search-input:focus{outline:none;border-color:var(--red);}
+
+/* BADGES */
+.rank-badge{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;font-size:11px;font-weight:700;}
+.r1{background:var(--gold);color:#000;}.r2{background:var(--silver);color:#000;}.r3{background:#cd7f32;color:#fff;}.rn{background:#2a2a3a;color:var(--text-secondary);}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;text-transform:uppercase;}
+.badge-red{background:rgba(225,6,0,.2);color:var(--red);border:1px solid rgba(225,6,0,.3);}
+.badge-gold{background:rgba(255,215,0,.2);color:var(--gold);border:1px solid rgba(255,215,0,.3);}
+
+/* SEASON REPLAY */
+.replay-ctrl{display:flex;gap:12px;align-items:center;margin-bottom:14px;flex-wrap:wrap;}
+.replay-ctrl select{padding:7px 13px;border:1px solid var(--border);border-radius:5px;background:#22223a;color:var(--text-primary);font-size:14px;font-weight:600;}
+.season-info{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:10px;margin-bottom:14px;}
+.s-stat{background:var(--bg-section);border:1px solid var(--border);border-radius:6px;padding:11px 13px;}
+.s-stat .lbl{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;}
+.s-stat .val{font-size:15px;font-weight:700;margin-top:1px;}
+.s-stat .sm{font-size:11px;color:var(--text-secondary);}
+
+/* CIRCUITS MAP */
+.circuit-layout{display:grid;grid-template-columns:1fr 340px;gap:var(--gap);margin-bottom:var(--gap);}
+@media(max-width:900px){.circuit-layout{grid-template-columns:1fr;}}
+.map-box{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;position:relative;}
+#circuit-canvas{width:100%;border-radius:6px;display:block;cursor:pointer;}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.winners-table{width:100%;border-collapse:collapse;font-size:12px;}
+.winners-table th{text-align:left;padding:5px 8px;border-bottom:1px solid var(--border);color:var(--text-secondary);font-size:10px;text-transform:uppercase;}
+.winners-table td{padding:6px 8px;border-bottom:1px solid #1e1e2e;}
+.top-list{display:flex;flex-direction:column;gap:6px;}
+.top-item{display:flex;justify-content:space-between;align-items:center;background:var(--bg-section);border-radius:4px;padding:6px 10px;font-size:12px;}
+.top-item .name{color:var(--text-primary);font-weight:600;}
+.top-item .cnt{color:var(--text-secondary);}
+#map-tooltip{position:absolute;background:#1e1e2e;border:1px solid var(--border);border-radius:6px;padding:8px 11px;font-size:12px;pointer-events:none;display:none;z-index:10;max-width:200px;}
+
+/* POPUP MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;}
+.modal-overlay.hidden{display:none;}
+.modal{background:#1a1a24;border:1px solid var(--border);border-radius:12px;width:100%;max-width:600px;max-height:85vh;overflow-y:auto;padding:24px;}
+.modal-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px;}
+.modal-name{font-size:22px;font-weight:800;}
+.modal-sub{font-size:12px;color:var(--text-secondary);margin-top:2px;}
+.modal-close{background:none;border:none;color:var(--text-secondary);font-size:22px;cursor:pointer;line-height:1;padding:0;}
+.modal-close:hover{color:#fff;}
+.modal-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-bottom:18px;}
+.modal-kpi{background:var(--bg-section);border:1px solid var(--border);border-radius:6px;padding:10px 12px;}
+.modal-kpi .lbl{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;}
+.modal-kpi .val{font-size:18px;font-weight:800;margin-top:2px;}
+.modal-chart-box{background:var(--bg-section);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:12px;}
+.modal-chart-title{font-size:12px;font-weight:600;margin-bottom:10px;color:var(--text-secondary);}
+.modal-chart-box canvas{max-height:200px;}
+.modal-section-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-secondary);margin-bottom:8px;}
+
+/* FOOTER */
+.footer{text-align:center;color:var(--text-muted);font-size:11px;padding:14px;border-top:1px solid var(--border);margin-top:var(--gap);}
+
+@media(max-width:768px){.kpi-row{grid-template-columns:repeat(2,1fr);}.chart-grid-2,.chart-grid-3{grid-template-columns:1fr;}}
+
+/* CIRCUITS UPGRADED */
+
+
+@media(max-width:1000px){}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.map-type-badge{display:inline-block;padding:2px 7px;border-radius:10px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;}
+.mt-street{background:rgba(225,6,0,.2);color:var(--red);}
+.mt-perm{background:rgba(0,144,255,.2);color:var(--blue);}
+.mt-semi{background:rgba(255,107,0,.2);color:var(--orange);}
+
+.chart-empty{background:var(--bg-section);border-radius:6px;min-height:240px;border:1px dashed var(--border);}
+.chart-box.tall .chart-empty{min-height:300px;}
+</style>
 </head>
 <body>
+<div class="wrap">
 
-<nav class="navbar">
-  <div class="nav-brand">TAME<span>·</span>VISION</div>
-  <ul class="nav-links" id="tab-nav">
-    <li><a href="#circuits" class="tab-link active" data-tab="circuits">Circuits</a></li>
-    <li><a href="#people" class="tab-link" data-tab="people">Drivers &amp; Constructors</a></li>
-    <li><a href="#season" class="tab-link" data-tab="season">Season Replay</a></li>
-    <li><a href="#pitstops" class="tab-link" data-tab="pitstops">Strategy</a></li>
-  </ul>
-</nav>
-
-<header class="hero">
-  <canvas id="hero3d" aria-hidden="true"></canvas>
-  <div class="hero-text">
-    <h1>Formula 1, Visualized</h1>
-    <p>Seventy-six seasons of racing data — 1950 to 2026.</p>
-    <p class="hero-caption"><span class="ferrari-dot"></span> Scuderia Ferrari</p>
+<!-- HEADER -->
+<header class="hdr">
+  <div class="hdr-left">
+    <div class="f1-logo">F1</div>
+    <div>
+      <h1>Formula 1 Racing Dashboard</h1>
+      <div class="sub">All-time statistics &amp; season analysis · 1950–2026</div>
+    </div>
   </div>
 </header>
 
-<section id="circuits" class="viz-section tab-panel active">
-  <div class="section-header">
-    <h2>1 · World Circuit Map</h2>
-    <p>Every circuit that has hosted a Formula 1 Grand Prix.</p>
-  </div>
-  <div id="circuit-map" class="viz-container"></div>
-</section>
-
-<div id="people" class="tab-panel">
-  <section id="drivers" class="viz-section alt">
-    <div class="section-header">
-      <h2>2 · Driver Hall of Fame</h2>
-      <p>Top 20 drivers by career race wins.</p>
-    </div>
-    <div class="controls">
-      <input type="text" id="driver-search" placeholder="Filter drivers…">
-    </div>
-    <div id="driver-chart" class="viz-container"></div>
-  </section>
-
-  <section id="constructors" class="viz-section">
-    <div class="section-header">
-      <h2>3 · Constructor Dominance</h2>
-      <p>Share of constructor championship points over time.</p>
-    </div>
-    <div id="constructor-chart" class="viz-container"></div>
-  </section>
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab-btn active" onclick="showTab('overview',this)">🏆 Overview</button>
+  <button class="tab-btn" onclick="showTab('drivers',this)">🏎️ Drivers</button>
+  <button class="tab-btn" onclick="showTab('constructors',this)">🔧 Constructors</button>
+  <button class="tab-btn" onclick="showTab('circuits',this)">🗺️ Circuits</button>
+  <button class="tab-btn" onclick="showTab('pitstops',this)">⏱️ Pit Stops</button>
+  <button class="tab-btn" onclick="showTab('replay',this)">📈 Season Replay</button>
+  <button class="tab-btn" onclick="showTab('results',this)">📋 Race Results</button>
 </div>
 
-<section id="season" class="viz-section alt tab-panel">
-  <div class="section-header">
-    <h2>4 · Season Race Replay</h2>
-    <p>Scrub through a season and watch the standings evolve.</p>
+<!-- OVERVIEW -->
+<div id="tab-overview" class="tab-panel active">
+  <div class="kpi-row">
+    <div class="kpi-card red"><div class="kpi-label">Total Races</div><div class="kpi-value" id="kpi-races">—</div><div class="kpi-sub">Grand Prix events</div></div>
+    <div class="kpi-card gold"><div class="kpi-label">Most Wins (Driver)</div><div class="kpi-value" id="kpi-d-wins">—</div><div class="kpi-sub" id="kpi-d-wins-name">—</div></div>
+    <div class="kpi-card silver"><div class="kpi-label">Most Wins (Constructor)</div><div class="kpi-value" id="kpi-c-wins">—</div><div class="kpi-sub" id="kpi-c-wins-name">—</div></div>
+    <div class="kpi-card blue"><div class="kpi-label">Total Drivers</div><div class="kpi-value" id="kpi-drivers">—</div><div class="kpi-sub">unique competitors</div></div>
+    <div class="kpi-card green"><div class="kpi-label">Seasons</div><div class="kpi-value" id="kpi-seasons">—</div><div class="kpi-sub">years of racing</div></div>
   </div>
-  <div class="controls">
-    <label for="season-select">Season:</label>
-    <select id="season-select"></select>
-    <label for="race-slider" id="race-label">Race 1</label>
-    <input type="range" id="race-slider" min="1" max="1" step="1" value="1">
+  <div class="chart-grid-2">
+    <div class="chart-box tall"><div class="chart-title"><span class="dot" style="background:var(--gold)"></span>Driver Wins (Top 15)</div><div class="chart-empty"></div></div>
+    <div class="chart-box tall"><div class="chart-title"><span class="dot" style="background:var(--red)"></span>Constructor Wins (Top 10)</div><div class="chart-empty"></div></div>
   </div>
-  <div id="season-chart" class="viz-container"></div>
-</section>
-
-<section id="pitstops" class="viz-section tab-panel">
-  <div class="section-header">
-    <h2>5 · Pit Stop Strategy</h2>
-    <p>Tyre stints and pit stops for every driver in a selected race.</p>
+  <div class="tbl-section">
+    <div class="tbl-hdr"><div class="tbl-title">🏆 World Champions by Season</div><input class="search-input" id="champ-search" placeholder="Search year / driver..." oninput="filterChampions()"/></div>
+    <div id="champ-tbl"></div>
   </div>
-  <div class="controls">
-    <label for="pit-year-select">Year:</label>
-    <select id="pit-year-select"></select>
-    <label for="race-select">Race:</label>
-    <select id="race-select"></select>
+</div>
+
+<!-- DRIVERS -->
+<div id="tab-drivers" class="tab-panel">
+  <div class="kpi-row">
+    <div class="kpi-card red"><div class="kpi-label">Most Wins</div><div class="kpi-value" id="d-kpi-w">—</div><div class="kpi-sub" id="d-kpi-w-n">—</div></div>
+    <div class="kpi-card gold"><div class="kpi-label">Most Podiums</div><div class="kpi-value" id="d-kpi-p">—</div><div class="kpi-sub" id="d-kpi-p-n">—</div></div>
+    <div class="kpi-card blue"><div class="kpi-label">Most Points</div><div class="kpi-value" id="d-kpi-pts">—</div><div class="kpi-sub" id="d-kpi-pts-n">—</div></div>
+    <div class="kpi-card silver"><div class="kpi-label">Most Races</div><div class="kpi-value" id="d-kpi-r">—</div><div class="kpi-sub" id="d-kpi-r-n">—</div></div>
   </div>
-  <div id="pitstop-chart" class="viz-container"></div>
-</section>
+  <div class="chart-grid-2">
+    <div class="chart-box tall"><div class="chart-title"><span class="dot" style="background:var(--red)"></span>Wins by Year — Top Drivers</div><div class="chart-empty"></div></div>
+    <div class="chart-box"><div class="chart-title"><span class="dot" style="background:var(--blue)"></span>Podiums vs Wins (Top 20)</div><div class="chart-empty"></div></div>
+  </div>
+  <div class="tbl-section">
+    <div class="tbl-hdr"><div class="tbl-title">🏎️ Driver Statistics</div><input class="search-input" id="drv-search" placeholder="Search driver..." oninput="filterDrvTable()"/></div>
+    <div id="drv-tbl"></div>
+  </div>
+</div>
 
-<footer>
-  <p>TAME-VISION · Data: Kaggle F1 (Ergast) · Built with D3 & Leaflet</p>
-</footer>
+<!-- CONSTRUCTORS -->
+<div id="tab-constructors" class="tab-panel">
+  <div class="kpi-row">
+    <div class="kpi-card red"><div class="kpi-label">Most Wins</div><div class="kpi-value" id="c-kpi-w">—</div><div class="kpi-sub" id="c-kpi-w-n">—</div></div>
+    <div class="kpi-card gold"><div class="kpi-label">Most Podiums</div><div class="kpi-value" id="c-kpi-p">—</div><div class="kpi-sub" id="c-kpi-p-n">—</div></div>
+    <div class="kpi-card blue"><div class="kpi-label">Most Points</div><div class="kpi-value" id="c-kpi-pts">—</div><div class="kpi-sub" id="c-kpi-pts-n">—</div></div>
+    <div class="kpi-card silver"><div class="kpi-label">Most Races</div><div class="kpi-value" id="c-kpi-r">—</div><div class="kpi-sub" id="c-kpi-r-n">—</div></div>
+  </div>
+  <div class="chart-grid-2">
+    <div class="chart-box"><div class="chart-title"><span class="dot" style="background:var(--red)"></span>Constructor Wins (Top 10)</div><div class="chart-empty"></div></div>
+    <div class="chart-box"><div class="chart-title"><span class="dot" style="background:var(--orange)"></span>Championship Points by Year — Top 5 Teams</div><div class="chart-empty"></div></div>
+  </div>
+  <div class="tbl-section">
+    <div class="tbl-hdr"><div class="tbl-title">🔧 Constructor Statistics</div></div>
+    <div id="constr-tbl"></div>
+  </div>
+</div>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://d3js.org/d3.v7.min.js"></script>
-<script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
-<script src="js/hero3d.js"></script>
-<script src="js/viz1.js"></script>
-<script src="js/viz2.js"></script>
-<script src="js/viz3.js"></script>
-<script src="js/viz4.js"></script>
-<script src="js/viz5.js"></script>
-<script src="js/main.js"></script>
+<!-- CIRCUITS -->
+<div id="tab-circuits" class="tab-panel">
+  <div class="chart-empty" style="height:400px;border-radius:var(--radius);"></div>
+</div>
 
+<!-- PIT STOPS -->
+<div id="tab-pitstops" class="tab-panel">
+  <div class="kpi-row">
+    <div class="kpi-card red"><div class="kpi-label">Data From</div><div class="kpi-value">2011</div><div class="kpi-sub">Pit timing introduced</div></div>
+    <div class="kpi-card gold"><div class="kpi-label">Fastest Stop Ever</div><div class="kpi-value" id="pit-fast">—</div><div class="kpi-sub">seconds recorded</div></div>
+    <div class="kpi-card blue"><div class="kpi-label">Total Stops Recorded</div><div class="kpi-value">22,164</div><div class="kpi-sub">across all races</div></div>
+    <div class="kpi-card silver"><div class="kpi-label">Avg Stops / Race</div><div class="kpi-value" id="pit-avg">—</div><div class="kpi-sub">latest season</div></div>
+  </div>
+  <div class="chart-grid-2">
+    <div class="chart-box"><div class="chart-title"><span class="dot" style="background:var(--red)"></span>Average Pit Stop Duration by Year</div><div class="chart-empty"></div></div>
+    <div class="chart-box"><div class="chart-title"><span class="dot" style="background:var(--blue)"></span>Average Stops Per Driver Per Race</div><div class="chart-empty"></div></div>
+  </div>
+  <div class="chart-box wide" style="margin-bottom:var(--gap)">
+    <div class="chart-title"><span class="dot" style="background:var(--gold)"></span>Fastest Pit Stop per Year</div>
+    <div class="chart-empty" style="height:200px;"></div>
+  </div>
+</div>
+
+<!-- SEASON REPLAY -->
+<div id="tab-replay" class="tab-panel">
+  <div class="chart-empty" style="height:460px;border-radius:var(--radius);"></div>
+</div>
+
+<!-- RACE RESULTS -->
+<div id="tab-results" class="tab-panel">
+  <div style="display:flex;gap:12px;align-items:center;margin-bottom:14px;flex-wrap:wrap;">
+    <div class="filter-group"><label>Search</label><input class="search-input" id="res-search" placeholder="Driver / team / race..." oninput="filterResults()"/></div>
+  </div>
+  <div class="tbl-section" style="margin-bottom:0">
+    <div id="res-tbl"></div>
+  </div>
+</div>
+
+</div><!-- /wrap -->
+
+<footer class="footer">Formula 1 Visualizations</footer>
+
+<script>
+const F1 = {"kpis": {"totalRaces": 1154, "totalDrivers": 865, "totalSeasons": 77, "mostWinsDriver": "Lewis Hamilton", "mostWinsCount": 105, "mostWinsConstructor": "Ferrari", "mostWinsConstructorCount": 249}, "champions": [{"year": 2025, "driverChampion": "Lando Norris", "champPoints": 423.0, "champWins": 7, "constructorChampion": "McLaren", "constrPoints": 833.0, "constrWins": 14.0}, {"year": 2024, "driverChampion": "Max Verstappen", "champPoints": 437.0, "champWins": 9, "constructorChampion": "McLaren", "constrPoints": 666.0, "constrWins": 6.0}, {"year": 2023, "driverChampion": "Max Verstappen", "champPoints": 575.0, "champWins": 19, "constructorChampion": "Red Bull", "constrPoints": 860.0, "constrWins": 21.0}, {"year": 2022, "driverChampion": "Max Verstappen", "champPoints": 454.0, "champWins": 15, "constructorChampion": "Red Bull", "constrPoints": 759.0, "constrWins": 17.0}, {"year": 2021, "driverChampion": "Max Verstappen", "champPoints": 395.5, "champWins": 10, "constructorChampion": "Mercedes", "constrPoints": 613.5, "constrWins": 9.0}, {"year": 2020, "driverChampion": "Lewis Hamilton", "champPoints": 347.0, "champWins": 11, "constructorChampion": "Mercedes", "constrPoints": 573.0, "constrWins": 13.0}, {"year": 2019, "driverChampion": "Lewis Hamilton", "champPoints": 413.0, "champWins": 11, "constructorChampion": "Mercedes", "constrPoints": 739.0, "constrWins": 15.0}, {"year": 2018, "driverChampion": "Lewis Hamilton", "champPoints": 408.0, "champWins": 11, "constructorChampion": "Mercedes", "constrPoints": 655.0, "constrWins": 11.0}, {"year": 2017, "driverChampion": "Lewis Hamilton", "champPoints": 363.0, "champWins": 9, "constructorChampion": "Mercedes", "constrPoints": 668.0, "constrWins": 12.0}, {"year": 2016, "driverChampion": "Nico Rosberg", "champPoints": 385.0, "champWins": 9, "constructorChampion": "Mercedes", "constrPoints": 765.0, "constrWins": 19.0}, {"year": 2015, "driverChampion": "Lewis Hamilton", "champPoints": 381.0, "champWins": 10, "constructorChampion": "Mercedes", "constrPoints": 703.0, "constrWins": 16.0}, {"year": 2014, "driverChampion": "Lewis Hamilton", "champPoints": 384.0, "champWins": 11, "constructorChampion": "Mercedes", "constrPoints": 701.0, "constrWins": 16.0}, {"year": 2013, "driverChampion": "Sebastian Vettel", "champPoints": 397.0, "champWins": 13, "constructorChampion": "Red Bull", "constrPoints": 596.0, "constrWins": 13.0}, {"year": 2012, "driverChampion": "Sebastian Vettel", "champPoints": 281.0, "champWins": 5, "constructorChampion": "Red Bull", "constrPoints": 460.0, "constrWins": 7.0}, {"year": 2011, "driverChampion": "Sebastian Vettel", "champPoints": 392.0, "champWins": 11, "constructorChampion": "Red Bull", "constrPoints": 650.0, "constrWins": 12.0}, {"year": 2010, "driverChampion": "Sebastian Vettel", "champPoints": 256.0, "champWins": 5, "constructorChampion": "Red Bull", "constrPoints": 498.0, "constrWins": 9.0}, {"year": 2009, "driverChampion": "Jenson Button", "champPoints": 95.0, "champWins": 6, "constructorChampion": "Brawn", "constrPoints": 172.0, "constrWins": 8.0}, {"year": 2008, "driverChampion": "Lewis Hamilton", "champPoints": 98.0, "champWins": 5, "constructorChampion": "Ferrari", "constrPoints": 172.0, "constrWins": 8.0}, {"year": 2007, "driverChampion": "Kimi R\u00e4ikk\u00f6nen", "champPoints": 110.0, "champWins": 6, "constructorChampion": "Ferrari", "constrPoints": 204.0, "constrWins": 9.0}, {"year": 2006, "driverChampion": "Fernando Alonso", "champPoints": 134.0, "champWins": 7, "constructorChampion": "Renault", "constrPoints": 206.0, "constrWins": 8.0}, {"year": 2005, "driverChampion": "Fernando Alonso", "champPoints": 133.0, "champWins": 7, "constructorChampion": "Renault", "constrPoints": 191.0, "constrWins": 8.0}, {"year": 2004, "driverChampion": "Michael Schumacher", "champPoints": 148.0, "champWins": 13, "constructorChampion": "Ferrari", "constrPoints": 262.0, "constrWins": 15.0}, {"year": 2003, "driverChampion": "Michael Schumacher", "champPoints": 93.0, "champWins": 6, "constructorChampion": "Ferrari", "constrPoints": 158.0, "constrWins": 8.0}, {"year": 2002, "driverChampion": "Michael Schumacher", "champPoints": 144.0, "champWins": 11, "constructorChampion": "Ferrari", "constrPoints": 221.0, "constrWins": 15.0}, {"year": 2001, "driverChampion": "Michael Schumacher", "champPoints": 123.0, "champWins": 9, "constructorChampion": "Ferrari", "constrPoints": 179.0, "constrWins": 9.0}, {"year": 2000, "driverChampion": "Michael Schumacher", "champPoints": 108.0, "champWins": 9, "constructorChampion": "Ferrari", "constrPoints": 170.0, "constrWins": 10.0}, {"year": 1999, "driverChampion": "Mika H\u00e4kkinen", "champPoints": 76.0, "champWins": 5, "constructorChampion": "Ferrari", "constrPoints": 128.0, "constrWins": 6.0}, {"year": 1998, "driverChampion": "Mika H\u00e4kkinen", "champPoints": 100.0, "champWins": 8, "constructorChampion": "McLaren", "constrPoints": 156.0, "constrWins": 9.0}, {"year": 1997, "driverChampion": "Jacques Villeneuve", "champPoints": 81.0, "champWins": 7, "constructorChampion": "Williams", "constrPoints": 123.0, "constrWins": 8.0}, {"year": 1996, "driverChampion": "Damon Hill", "champPoints": 97.0, "champWins": 8, "constructorChampion": "Williams", "constrPoints": 175.0, "constrWins": 12.0}, {"year": 1995, "driverChampion": "Michael Schumacher", "champPoints": 102.0, "champWins": 9, "constructorChampion": "Benetton", "constrPoints": 147.0, "constrWins": 11.0}, {"year": 1994, "driverChampion": "Michael Schumacher", "champPoints": 92.0, "champWins": 8, "constructorChampion": "Williams", "constrPoints": 118.0, "constrWins": 7.0}, {"year": 1993, "driverChampion": "Alain Prost", "champPoints": 99.0, "champWins": 7, "constructorChampion": "Williams", "constrPoints": 168.0, "constrWins": 10.0}, {"year": 1992, "driverChampion": "Nigel Mansell", "champPoints": 108.0, "champWins": 9, "constructorChampion": "Williams", "constrPoints": 164.0, "constrWins": 10.0}, {"year": 1991, "driverChampion": "Ayrton Senna", "champPoints": 96.0, "champWins": 7, "constructorChampion": "McLaren", "constrPoints": 139.0, "constrWins": 8.0}, {"year": 1990, "driverChampion": "Ayrton Senna", "champPoints": 78.0, "champWins": 6, "constructorChampion": "McLaren", "constrPoints": 121.0, "constrWins": 6.0}, {"year": 1989, "driverChampion": "Alain Prost", "champPoints": 76.0, "champWins": 4, "constructorChampion": "McLaren", "constrPoints": 141.0, "constrWins": 10.0}, {"year": 1988, "driverChampion": "Ayrton Senna", "champPoints": 90.0, "champWins": 8, "constructorChampion": "McLaren", "constrPoints": 199.0, "constrWins": 15.0}, {"year": 1987, "driverChampion": "Nelson Piquet", "champPoints": 73.0, "champWins": 3, "constructorChampion": "Williams", "constrPoints": 137.0, "constrWins": 9.0}, {"year": 1986, "driverChampion": "Alain Prost", "champPoints": 72.0, "champWins": 4, "constructorChampion": "Williams", "constrPoints": 141.0, "constrWins": 9.0}, {"year": 1985, "driverChampion": "Alain Prost", "champPoints": 73.0, "champWins": 5, "constructorChampion": "McLaren", "constrPoints": 90.0, "constrWins": 6.0}, {"year": 1984, "driverChampion": "Niki Lauda", "champPoints": 72.0, "champWins": 5, "constructorChampion": "McLaren", "constrPoints": 143.5, "constrWins": 12.0}, {"year": 1983, "driverChampion": "Nelson Piquet", "champPoints": 59.0, "champWins": 3, "constructorChampion": "Ferrari", "constrPoints": 89.0, "constrWins": 4.0}, {"year": 1982, "driverChampion": "Keke Rosberg", "champPoints": 44.0, "champWins": 1, "constructorChampion": "Ferrari", "constrPoints": 74.0, "constrWins": 3.0}, {"year": 1981, "driverChampion": "Nelson Piquet", "champPoints": 50.0, "champWins": 3, "constructorChampion": "Williams", "constrPoints": 95.0, "constrWins": 4.0}, {"year": 1980, "driverChampion": "Alan Jones", "champPoints": 67.0, "champWins": 5, "constructorChampion": "Williams", "constrPoints": 120.0, "constrWins": 6.0}, {"year": 1979, "driverChampion": "Jody Scheckter", "champPoints": 51.0, "champWins": 3, "constructorChampion": "Ferrari", "constrPoints": 113.0, "constrWins": 6.0}, {"year": 1978, "driverChampion": "Mario Andretti", "champPoints": 64.0, "champWins": 6, "constructorChampion": "Team Lotus", "constrPoints": 86.0, "constrWins": 8.0}, {"year": 1977, "driverChampion": "Niki Lauda", "champPoints": 72.0, "champWins": 3, "constructorChampion": "Ferrari", "constrPoints": 95.0, "constrWins": 4.0}, {"year": 1976, "driverChampion": "James Hunt", "champPoints": 69.0, "champWins": 6, "constructorChampion": "Ferrari", "constrPoints": 83.0, "constrWins": 6.0}, {"year": 1975, "driverChampion": "Niki Lauda", "champPoints": 64.5, "champWins": 5, "constructorChampion": "Ferrari", "constrPoints": 72.5, "constrWins": 6.0}, {"year": 1974, "driverChampion": "Emerson Fittipaldi", "champPoints": 55.0, "champWins": 3, "constructorChampion": "McLaren", "constrPoints": 73.0, "constrWins": 4.0}, {"year": 1973, "driverChampion": "Jackie Stewart", "champPoints": 71.0, "champWins": 5, "constructorChampion": "Team Lotus", "constrPoints": 92.0, "constrWins": 7.0}, {"year": 1972, "driverChampion": "Emerson Fittipaldi", "champPoints": 61.0, "champWins": 5, "constructorChampion": "Team Lotus", "constrPoints": 61.0, "constrWins": 5.0}, {"year": 1971, "driverChampion": "Jackie Stewart", "champPoints": 62.0, "champWins": 6, "constructorChampion": "Tyrrell", "constrPoints": 73.0, "constrWins": 7.0}, {"year": 1970, "driverChampion": "Jochen Rindt", "champPoints": 45.0, "champWins": 5, "constructorChampion": "Team Lotus", "constrPoints": 59.0, "constrWins": 6.0}, {"year": 1969, "driverChampion": "Jackie Stewart", "champPoints": 63.0, "champWins": 6, "constructorChampion": "Matra-Ford", "constrPoints": 66.0, "constrWins": 6.0}, {"year": 1968, "driverChampion": "Graham Hill", "champPoints": 48.0, "champWins": 3, "constructorChampion": "Lotus-Ford", "constrPoints": 62.0, "constrWins": 5.0}, {"year": 1967, "driverChampion": "Denny Hulme", "champPoints": 51.0, "champWins": 2, "constructorChampion": "Brabham-Repco", "constrPoints": 63.0, "constrWins": 4.0}, {"year": 1966, "driverChampion": "Jack Brabham", "champPoints": 42.0, "champWins": 4, "constructorChampion": "Brabham-Repco", "constrPoints": 42.0, "constrWins": 4.0}, {"year": 1965, "driverChampion": "Jim Clark", "champPoints": 54.0, "champWins": 6, "constructorChampion": "Lotus-Climax", "constrPoints": 54.0, "constrWins": 6.0}, {"year": 1964, "driverChampion": "John Surtees", "champPoints": 40.0, "champWins": 2, "constructorChampion": "Ferrari", "constrPoints": 45.0, "constrWins": 3.0}, {"year": 1963, "driverChampion": "Jim Clark", "champPoints": 54.0, "champWins": 7, "constructorChampion": "Lotus-Climax", "constrPoints": 54.0, "constrWins": 7.0}, {"year": 1962, "driverChampion": "Graham Hill", "champPoints": 42.0, "champWins": 4, "constructorChampion": "BRM", "constrPoints": 42.0, "constrWins": 4.0}, {"year": 1961, "driverChampion": "Phil Hill", "champPoints": 34.0, "champWins": 2, "constructorChampion": "Ferrari", "constrPoints": 45.0, "constrWins": 5.0}, {"year": 1960, "driverChampion": "Jack Brabham", "champPoints": 43.0, "champWins": 5, "constructorChampion": "Cooper-Climax", "constrPoints": 48.0, "constrWins": 6.0}, {"year": 1959, "driverChampion": "Jack Brabham", "champPoints": 31.0, "champWins": 2, "constructorChampion": "Cooper-Climax", "constrPoints": 40.0, "constrWins": 5.0}, {"year": 1958, "driverChampion": "Mike Hawthorn", "champPoints": 42.0, "champWins": 1, "constructorChampion": "Vanwall", "constrPoints": 48.0, "constrWins": 6.0}, {"year": 1957, "driverChampion": "Juan Fangio", "champPoints": 40.0, "champWins": 4, "constructorChampion": NaN, "constrPoints": NaN, "constrWins": NaN}, {"year": 1956, "driverChampion": "Juan Fangio", "champPoints": 30.0, "champWins": 3, "constructorChampion": NaN, "constrPoints": NaN, "constrWins": NaN}, {"year": 1955, "driverChampion": "Juan Fangio", "champPoints": 40.0, "champWins": 4, "constructorChampion": NaN, "constrPoints": NaN, "constrWins": NaN}, {"year": 1954, "driverChampion": "Juan Fangio", "champPoints": 42.0, "champWins": 6, "constructorChampion": NaN, "constrPoints": NaN, "constrWins": NaN}, {"year": 1953, "driverChampion": "Alberto Ascari", "champPoints": 34.5, "champWins": 5, "constructorChampion": NaN, "constrPoints": NaN, "constrWins": NaN}, {"year": 1952, "driverChampion": "Alberto Ascari", "champPoints": 36.0, "champWins": 6, "constructorChampion": NaN, "constrPoints": NaN, "constrWins": NaN}, {"year": 1951, "driverChampion": "Juan Fangio", "champPoints": 31.0, "champWins": 3, "constructorChampion": NaN, "constrPoints": NaN, "constrWins": NaN}, {"year": 1950, "driverChampion": "Nino Farina", "champPoints": 30.0, "champWins": 3, "constructorChampion": NaN, "constrPoints": NaN, "constrWins": NaN}], "driverStats": [{"driverId": 1, "fullName": "Lewis Hamilton", "wins": 105.0, "podiums": 203.0, "points": 4982.5, "races": 382, "nationality": "British"}, {"driverId": 30, "fullName": "Michael Schumacher", "wins": 91.0, "podiums": 155.0, "points": 1566.0, "races": 308, "nationality": "German"}, {"driverId": 830, "fullName": "Max Verstappen", "wins": 71.0, "podiums": 127.0, "points": 3309.5, "races": 235, "nationality": "Dutch"}, {"driverId": 20, "fullName": "Sebastian Vettel", "wins": 53.0, "podiums": 122.0, "points": 3098.0, "races": 300, "nationality": "German"}, {"driverId": 117, "fullName": "Alain Prost", "wins": 51.0, "podiums": 106.0, "points": 798.5, "races": 202, "nationality": "French"}, {"driverId": 102, "fullName": "Ayrton Senna", "wins": 41.0, "podiums": 80.0, "points": 614.0, "races": 162, "nationality": "Brazilian"}, {"driverId": 4, "fullName": "Fernando Alonso", "wins": 32.0, "podiums": 106.0, "points": 2380.0, "races": 430, "nationality": "Spanish"}, {"driverId": 95, "fullName": "Nigel Mansell", "wins": 31.0, "podiums": 59.0, "points": 482.0, "races": 192, "nationality": "British"}, {"driverId": 328, "fullName": "Jackie Stewart", "wins": 27.0, "podiums": 43.0, "points": 360.0, "races": 100, "nationality": "British"}, {"driverId": 373, "fullName": "Jim Clark", "wins": 25.0, "podiums": 32.0, "points": 274.0, "races": 73, "nationality": "British"}, {"driverId": 182, "fullName": "Niki Lauda", "wins": 25.0, "podiums": 54.0, "points": 420.5, "races": 174, "nationality": "Austrian"}, {"driverId": 579, "fullName": "Juan Fangio", "wins": 24.0, "podiums": 35.0, "points": 279.14, "races": 58, "nationality": "Argentine"}, {"driverId": 3, "fullName": "Nico Rosberg", "wins": 23.0, "podiums": 57.0, "points": 1594.5, "races": 206, "nationality": "German"}, {"driverId": 137, "fullName": "Nelson Piquet", "wins": 23.0, "podiums": 60.0, "points": 485.5, "races": 207, "nationality": "Brazilian"}, {"driverId": 71, "fullName": "Damon Hill", "wins": 22.0, "podiums": 42.0, "points": 360.0, "races": 122, "nationality": "British"}, {"driverId": 8, "fullName": "Kimi R\u00e4ikk\u00f6nen", "wins": 21.0, "podiums": 103.0, "points": 1873.0, "races": 352, "nationality": "Finnish"}, {"driverId": 57, "fullName": "Mika H\u00e4kkinen", "wins": 20.0, "podiums": 51.0, "points": 420.0, "races": 165, "nationality": "Finnish"}, {"driverId": 475, "fullName": "Stirling Moss", "wins": 16.0, "podiums": 24.0, "points": 186.5, "races": 73, "nationality": "British"}, {"driverId": 18, "fullName": "Jenson Button", "wins": 15.0, "podiums": 50.0, "points": 1235.0, "races": 309, "nationality": "British"}, {"driverId": 356, "fullName": "Jack Brabham", "wins": 14.0, "podiums": 31.0, "points": 261.0, "races": 129, "nationality": "Australian"}, {"driverId": 289, "fullName": "Graham Hill", "wins": 14.0, "podiums": 36.0, "points": 289.0, "races": 179, "nationality": "British"}, {"driverId": 224, "fullName": "Emerson Fittipaldi", "wins": 14.0, "podiums": 35.0, "points": 281.0, "races": 149, "nationality": "Brazilian"}, {"driverId": 647, "fullName": "Alberto Ascari", "wins": 13.0, "podiums": 17.0, "points": 140.0, "races": 36, "nationality": "Italian"}, {"driverId": 14, "fullName": "David Coulthard", "wins": 13.0, "podiums": 62.0, "points": 535.0, "races": 247, "nationality": "British"}, {"driverId": 199, "fullName": "Carlos Reutemann", "wins": 12.0, "podiums": 45.0, "points": 310.0, "races": 146, "nationality": "Argentine"}, {"driverId": 207, "fullName": "Mario Andretti", "wins": 12.0, "podiums": 19.0, "points": 180.0, "races": 129, "nationality": "American"}, {"driverId": 178, "fullName": "Alan Jones", "wins": 12.0, "podiums": 24.0, "points": 206.0, "races": 117, "nationality": "Australian"}, {"driverId": 22, "fullName": "Rubens Barrichello", "wins": 11.0, "podiums": 68.0, "points": 658.0, "races": 326, "nationality": "Brazilian"}, {"driverId": 846, "fullName": "Lando Norris", "wins": 11.0, "podiums": 44.0, "points": 1354.0, "races": 154, "nationality": "British"}, {"driverId": 13, "fullName": "Felipe Massa", "wins": 11.0, "podiums": 41.0, "points": 1167.0, "races": 271, "nationality": "Brazilian"}], "constrStats": [{"constructorId": 6, "constructor": "Ferrari", "wins": 249.0, "podiums": 850.0, "points": 11505.27, "races": 2491, "constrNat": "Italian"}, {"constructorId": 1, "constructor": "McLaren", "wins": 199.0, "podiums": 542.0, "points": 7807.5, "races": 1975, "constrNat": "British"}, {"constructorId": 131, "constructor": "Mercedes", "wins": 133.0, "podiums": 314.0, "points": 8240.64, "races": 704, "constrNat": "German"}, {"constructorId": 9, "constructor": "Red Bull", "wins": 130.0, "podiums": 297.0, "points": 8095.0, "races": 840, "constrNat": "Austrian"}, {"constructorId": 3, "constructor": "Williams", "wins": 114.0, "podiums": 316.0, "points": 3767.0, "races": 1728, "constrNat": "British"}, {"constructorId": 32, "constructor": "Team Lotus", "wins": 45.0, "podiums": 114.0, "points": 995.0, "races": 871, "constrNat": "British"}, {"constructorId": 4, "constructor": "Renault", "wins": 35.0, "podiums": 103.0, "points": 1777.0, "races": 787, "constrNat": "French"}, {"constructorId": 22, "constructor": "Benetton", "wins": 27.0, "podiums": 102.0, "points": 861.5, "races": 520, "constrNat": "Italian"}, {"constructorId": 25, "constructor": "Tyrrell", "wins": 23.0, "podiums": 77.0, "points": 711.0, "races": 881, "constrNat": "British"}, {"constructorId": 34, "constructor": "Brabham", "wins": 23.0, "podiums": 78.0, "points": 631.0, "races": 662, "constrNat": "British"}, {"constructorId": 172, "constructor": "Lotus-Climax", "wins": 22.0, "podiums": 31.0, "points": 281.0, "races": 233, "constrNat": "British"}, {"constructorId": 66, "constructor": "BRM", "wins": 17.0, "podiums": 61.0, "points": 537.5, "races": 562, "constrNat": "British"}, {"constructorId": 170, "constructor": "Cooper-Climax", "wins": 12.0, "podiums": 44.0, "points": 336.5, "races": 268, "constrNat": "British"}, {"constructorId": 180, "constructor": "Lotus-Ford", "wins": 11.0, "podiums": 25.0, "points": 209.0, "races": 128, "constrNat": "British"}, {"constructorId": 51, "constructor": "Alfa Romeo", "wins": 11.0, "podiums": 28.0, "points": 361.0, "races": 451, "constrNat": "Swiss"}, {"constructorId": 118, "constructor": "Vanwall", "wins": 10.0, "podiums": 14.0, "points": 108.0, "races": 71, "constrNat": "British"}, {"constructorId": 27, "constructor": "Ligier", "wins": 9.0, "podiums": 50.0, "points": 388.0, "races": 611, "constrNat": "French"}, {"constructorId": 196, "constructor": "Matra-Ford", "wins": 9.0, "podiums": 15.0, "points": 130.0, "races": 40, "constrNat": "French"}, {"constructorId": 105, "constructor": "Maserati", "wins": 9.0, "podiums": 40.0, "points": 313.14, "races": 436, "constrNat": "Italian"}, {"constructorId": 23, "constructor": "Brawn", "wins": 8.0, "podiums": 15.0, "points": 172.0, "races": 34, "constrNat": "British"}], "races2025": [{"year": 2025, "round": 1, "race": "Australian Grand Prix", "winner": "Lando Norris", "team": "McLaren", "date": "2025-03-16"}, {"year": 2025, "round": 2, "race": "Chinese Grand Prix", "winner": "Oscar Piastri", "team": "McLaren", "date": "2025-03-23"}, {"year": 2025, "round": 3, "race": "Japanese Grand Prix", "winner": "Max Verstappen", "team": "Red Bull", "date": "2025-04-06"}, {"year": 2025, "round": 4, "race": "Bahrain Grand Prix", "winner": "Oscar Piastri", "team": "McLaren", "date": "2025-04-13"}, {"year": 2025, "round": 5, "race": "Saudi Arabian Grand Prix", "winner": "Oscar Piastri", "team": "McLaren", "date": "2025-04-20"}, {"year": 2025, "round": 6, "race": "Miami Grand Prix", "winner": "Oscar Piastri", "team": "McLaren", "date": "2025-05-04"}, {"year": 2025, "round": 7, "race": "Emilia Romagna Grand Prix", "winner": "Max Verstappen", "team": "Red Bull", "date": "2025-05-18"}, {"year": 2025, "round": 8, "race": "Monaco Grand Prix", "winner": "Lando Norris", "team": "McLaren", "date": "2025-05-25"}, {"year": 2025, "round": 9, "race": "Spanish Grand Prix", "winner": "Oscar Piastri", "team": "McLaren", "date": "2025-06-01"}, {"year": 2025, "round": 10, "race": "Canadian Grand Prix", "winner": "George Russell", "team": "Mercedes", "date": "2025-06-15"}, {"year": 2025, "round": 11, "race": "Austrian Grand Prix", "winner": "Lando Norris", "team": "McLaren", "date": "2025-06-29"}, {"year": 2025, "round": 12, "race": "British Grand Prix", "winner": "Lando Norris", "team": "McLaren", "date": "2025-07-06"}, {"year": 2025, "round": 13, "race": "Belgian Grand Prix", "winner": "Oscar Piastri", "team": "McLaren", "date": "2025-07-27"}, {"year": 2025, "round": 14, "race": "Hungarian Grand Prix", "winner": "Lando Norris", "team": "McLaren", "date": "2025-08-03"}, {"year": 2025, "round": 15, "race": "Dutch Grand Prix", "winner": "Oscar Piastri", "team": "McLaren", "date": "2025-08-31"}, {"year": 2025, "round": 16, "race": "Italian Grand Prix", "winner": "Max Verstappen", "team": "Red Bull", "date": "2025-09-07"}, {"year": 2025, "round": 17, "race": "Azerbaijan Grand Prix", "winner": "Max Verstappen", "team": "Red Bull", "date": "2025-09-21"}, {"year": 2025, "round": 18, "race": "Singapore Grand Prix", "winner": "George Russell", "team": "Mercedes", "date": "2025-10-05"}, {"year": 2025, "round": 19, "race": "United States Grand Prix", "winner": "Max Verstappen", "team": "Red Bull", "date": "2025-10-19"}, {"year": 2025, "round": 20, "race": "Mexico City Grand Prix", "winner": "Lando Norris", "team": "McLaren", "date": "2025-10-26"}, {"year": 2025, "round": 21, "race": "S\u00e3o Paulo Grand Prix", "winner": "Lando Norris", "team": "McLaren", "date": "2025-11-09"}, {"year": 2025, "round": 22, "race": "Las Vegas Grand Prix", "winner": "Max Verstappen", "team": "Red Bull", "date": "2025-11-23"}, {"year": 2025, "round": 23, "race": "Qatar Grand Prix", "winner": "Max Verstappen", "team": "Red Bull", "date": "2025-11-30"}, {"year": 2025, "round": 24, "race": "Abu Dhabi Grand Prix", "winner": "Max Verstappen", "team": "Red Bull", "date": "2025-12-07"}], "pitFastest": 8.757, "pitAvgStops": 1.42};
+
+
+const TC={'Ferrari':'#e8002d','McLaren':'#ff8000','Mercedes':'#00d2be',
+'Red Bull':'#3671c6','Williams':'#64c4ff','Aston Martin':'#358c75',
+'Alpine':'#ff87bc','RB':'#6692ff','Haas':'#b6babd','Sauber':'#52e252',
+'Renault':'#ffd700','Force India':'#ff80c7','Lotus F1':'#b5002e',
+'Racing Point':'#f596c8','Toro Rosso':'#469bff','AlphaTauri':'#5c6a97',
+'Alfa Romeo':'#c92d4b','Toyota':'#cc1111','BMW Sauber':'#0070ff',
+'Honda':'#c92d4b','Brawn':'#80ff00','Jordan':'#f4c430','BAR':'#fff',
+'Jaguar':'#00a550','Minardi':'#191919','Arrows':'#ff7f00',
+'Prost':'#006cb5','Stewart':'#ffffff','Ligier':'#0033cc',
+'Benetton':'#00cc00','Tyrrell':'#003f7f','Brabham':'#ffffff',
+'Lotus':'#ffd700','Cooper':'#cccccc','BRM':'#009900',
+'Vanwall':'#006600','Maserati':'#aa0000','Lancia':'#0000aa',
+'default':'#9898a8'};
+function tc(t){return TC[t]||TC.default;}
+
+
+function fmtPts(v){return Number.isInteger(v)?v.toLocaleString():(+v).toFixed(1);}
+
+// ── Tab switching ─────────────────────────────────────────────────────────────
+function showTab(id, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ── KPI ───────────────────────────────────────────────────────────────────────
+function initKPIs() {
+  const k = F1.kpis;
+  const ds = F1.driverStats;
+  const cs = F1.constrStats;
+
+  // Overview
+  document.getElementById('kpi-races').textContent    = k.totalRaces.toLocaleString();
+  document.getElementById('kpi-seasons').textContent  = k.totalSeasons;
+  document.getElementById('kpi-drivers').textContent  = k.totalDrivers.toLocaleString();
+  document.getElementById('kpi-d-wins').textContent   = k.mostWinsCount;
+  document.getElementById('kpi-d-wins-name').textContent = k.mostWinsDriver;
+  document.getElementById('kpi-c-wins').textContent   = k.mostWinsConstructorCount;
+  document.getElementById('kpi-c-wins-name').textContent = k.mostWinsConstructor;
+
+  // Drivers
+  if (ds.length) {
+    document.getElementById('d-kpi-w').textContent   = ds[0].wins;
+    document.getElementById('d-kpi-w-n').textContent = ds[0].fullName;
+    const byP = [...ds].sort((a,b) => b.podiums - a.podiums);
+    document.getElementById('d-kpi-p').textContent   = byP[0].podiums;
+    document.getElementById('d-kpi-p-n').textContent = byP[0].fullName;
+    const byPts = [...ds].sort((a,b) => b.points - a.points);
+    document.getElementById('d-kpi-pts').textContent  = fmtPts(byPts[0].points);
+    document.getElementById('d-kpi-pts-n').textContent = byPts[0].fullName;
+    const byR = [...ds].sort((a,b) => b.races - a.races);
+    document.getElementById('d-kpi-r').textContent   = byR[0].races;
+    document.getElementById('d-kpi-r-n').textContent = byR[0].fullName;
+  }
+
+  // Constructors
+  if (cs.length) {
+    document.getElementById('c-kpi-w').textContent   = cs[0].wins;
+    document.getElementById('c-kpi-w-n').textContent = cs[0].constructor;
+    const byP = [...cs].sort((a,b) => b.podiums - a.podiums);
+    document.getElementById('c-kpi-p').textContent   = byP[0].podiums;
+    document.getElementById('c-kpi-p-n').textContent = byP[0].constructor;
+    const byPts = [...cs].sort((a,b) => b.points - a.points);
+    document.getElementById('c-kpi-pts').textContent  = Math.round(byPts[0].points).toLocaleString();
+    document.getElementById('c-kpi-pts-n').textContent = byPts[0].constructor;
+    const byR = [...cs].sort((a,b) => (b.races||0) - (a.races||0));
+    document.getElementById('c-kpi-r').textContent   = (byR[0].races||0).toLocaleString();
+    document.getElementById('c-kpi-r-n').textContent = byR[0].constructor;
+  }
+
+  // Pit stops
+  document.getElementById('pit-fast').textContent = F1.pitFastest + 's';
+  document.getElementById('pit-avg').textContent  = F1.pitAvgStops;
+}
+
+// ── Champions table ───────────────────────────────────────────────────────────
+let allChampions = [];
+function renderChampions() {
+  allChampions = F1.champions;
+  filterChampions();
+}
+function filterChampions() {
+  const q = (document.getElementById('champ-search').value || '').toLowerCase();
+  const data = allChampions.filter(c =>
+    !q || String(c.year).includes(q) ||
+    (c.driverChampion||'').toLowerCase().includes(q) ||
+    (c.constructorChampion||'').toLowerCase().includes(q)
+  );
+  let h = `<table class="data-table"><thead><tr><th>Year</th><th>Driver Champion</th><th>Wins</th><th>Points</th><th>Constructor Champion</th><th>Pts</th></tr></thead><tbody>`;
+  data.forEach(c => {
+    h += `<tr>
+      <td><strong>${c.year}</strong></td>
+      <td>${c.driverChampion||'—'}</td>
+      <td>${c.champWins||'—'}</td>
+      <td>${c.champPoints!=null?fmtPts(c.champPoints):'—'}</td>
+      <td><span style="color:${tc(c.constructorChampion)}">●</span> ${c.constructorChampion||'—'}</td>
+      <td>${c.constrPoints!=null?fmtPts(c.constrPoints):'—'}</td>
+    </tr>`;
+  });
+  h += '</tbody></table>';
+  document.getElementById('champ-tbl').innerHTML = h;
+}
+
+// ── Driver stats table ────────────────────────────────────────────────────────
+let allDrivers = [];
+function renderDrvTable() {
+  allDrivers = F1.driverStats;
+  filterDrvTable();
+}
+function filterDrvTable() {
+  const q = (document.getElementById('drv-search').value || '').toLowerCase();
+  const data = allDrivers.filter(d => !q || d.fullName.toLowerCase().includes(q) || (d.nationality||'').toLowerCase().includes(q));
+  let h = `<table class="data-table"><thead><tr><th>#</th><th>Driver</th><th>Nat.</th><th>Wins</th><th>Podiums</th><th>Points</th><th>Races</th></tr></thead><tbody>`;
+  data.forEach((d, i) => {
+    h += `<tr>
+      <td style="color:var(--text-muted)">${i+1}</td>
+      <td><strong>${d.fullName}</strong></td>
+      <td style="color:var(--text-secondary)">${d.nationality||'—'}</td>
+      <td style="color:var(--gold)">${d.wins}</td>
+      <td>${d.podiums}</td>
+      <td>${fmtPts(d.points)}</td>
+      <td style="color:var(--text-secondary)">${d.races}</td>
+    </tr>`;
+  });
+  h += '</tbody></table>';
+  document.getElementById('drv-tbl').innerHTML = h;
+}
+
+// ── Constructor stats table ───────────────────────────────────────────────────
+function renderConstrTable() {
+  const data = F1.constrStats;
+  let h = `<table class="data-table"><thead><tr><th>#</th><th>Constructor</th><th>Nat.</th><th>Wins</th><th>Podiums</th><th>Points</th><th>Races</th></tr></thead><tbody>`;
+  data.forEach((c, i) => {
+    h += `<tr>
+      <td style="color:var(--text-muted)">${i+1}</td>
+      <td><strong><span style="color:${tc(c.constructor)}">●</span> ${c.constructor}</strong></td>
+      <td style="color:var(--text-secondary)">${c.constrNat||'—'}</td>
+      <td style="color:var(--gold)">${c.wins}</td>
+      <td>${c.podiums}</td>
+      <td>${Math.round(c.points).toLocaleString()}</td>
+      <td style="color:var(--text-secondary)">${(c.races||0).toLocaleString()}</td>
+    </tr>`;
+  });
+  h += '</tbody></table>';
+  document.getElementById('constr-tbl').innerHTML = h;
+}
+
+// ── Race Results 2025 ─────────────────────────────────────────────────────────
+function filterResults() {
+  const q = (document.getElementById('res-search').value || '').toLowerCase();
+  let data = F1.races2025.filter(r =>
+    !q ||
+    (r.winner||'').toLowerCase().includes(q) ||
+    (r.team||'').toLowerCase().includes(q) ||
+    (r.race||'').toLowerCase().includes(q)
+  );
+  let h = `<table class="data-table"><thead><tr><th>Rnd</th><th>Race</th><th>Winner</th><th>Team</th><th>Date</th></tr></thead><tbody>`;
+  data.forEach(r => {
+    h += `<tr>
+      <td>${r.round}</td>
+      <td>${r.race}</td>
+      <td><strong>${r.winner||'—'}</strong></td>
+      <td><span style="color:${tc(r.team)}">●</span> ${r.team||'—'}</td>
+      <td style="color:var(--text-secondary)">${r.date||'—'}</td>
+    </tr>`;
+  });
+  h += '</tbody></table>';
+  document.getElementById('res-tbl').innerHTML = h;
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  initKPIs();
+  renderChampions();
+  renderDrvTable();
+  renderConstrTable();
+  filterResults();
+});
+</script>
 </body>
 </html>
