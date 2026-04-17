@@ -56,9 +56,11 @@ Our objective is to bridge these two perspectives by creating a platform that is
 
 
 
-## Milestone 2 (17th April, 5pm)
+## Milestone 2 (April 17th, 5pm)
 
-**10% of the final grade**
+- **Report:** *Milestone 2 - TAME VISION .pdf*  
+- **Website:** https://com-480-data-visualization.github.io/TAME-VISION/
+
 
 
 ## Milestone 3 (29th May, 5pm)
